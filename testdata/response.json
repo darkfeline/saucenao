@@ -1,0 +1,51 @@
+{
+  "results": [
+    {
+      "data": {
+        "source": "http://img10.pixiv.net/img/howard19862002/12897460.jpg",
+        "characters": "elis (touhou), kikuri (touhou), konngara, mima, sariel, shingyoku, shingyoku (male), yuugenmagan",
+        "material": "highly responsive to prayers, touhou, touhou (pc-98)",
+        "creator": "nichimatsu seri",
+        "danbooru_id": 736634,
+        "ext_urls": [
+          "https://danbooru.donmai.us/post/show/736634"
+        ]
+      },
+      "header": {
+        "index_name": "Index #9: Danbooru - cf735b2a59302bf96aac3960c4e075a1_0.jpg",
+        "index_id": 9,
+        "thumbnail": "https://img3.saucenao.com/booru/c/f/cf735b2a59302bf96aac3960c4e075a1_0.jpg",
+        "similarity": "18.71"
+      }
+    }
+  ],
+  "header": {
+    "results_returned": 16,
+    "query_image": "SNlPdujjG.gif",
+    "query_image_display": "userdata/SNlPdujjG.gif.png",
+    "minimum_similarity": 24.6,
+    "search_depth": "128",
+    "index": {
+      "51": {
+        "results": 1,
+        "id": 51,
+        "parent_id": 5,
+        "status": 0
+      },
+      "5": {
+        "results": 1,
+        "id": 5,
+        "parent_id": 5,
+        "status": 0
+      }
+    },
+    "results_requested": 16,
+    "status": 0,
+    "short_remaining": 5,
+    "long_remaining": 199,
+    "long_limit": "200",
+    "short_limit": "6",
+    "account_type": "1",
+    "user_id": "12345"
+  }
+}
