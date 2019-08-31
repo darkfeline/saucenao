@@ -19,6 +19,7 @@
 package saucenao
 
 import (
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -57,8 +58,13 @@ type DBMask uint64
 //go:generate python3 generate_dbs.py
 
 // Search calls the SauceNAO search API.
-func (c *Client) Search(r *SearchRequest) (*SearchResponse, error) {
-	resp, err := c.C.Get(c.searchURL(r))
+func (c *Client) Search(ctx context.Context, r *SearchRequest) (*SearchResponse, error) {
+	req, err := http.NewRequest("GET", c.searchURL(r), nil)
+	if err != nil {
+		return nil, xerrors.Errorf("saucenao search: %w", err)
+	}
+	req = req.WithContext(ctx)
+	resp, err := c.C.Do(req)
 	if err != nil {
 		return nil, xerrors.Errorf("saucenao search: %w", err)
 	}
