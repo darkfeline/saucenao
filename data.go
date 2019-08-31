@@ -14,10 +14,12 @@
 
 package saucenao
 
+// CommonData is the result data common to all indexes.
 type CommonData struct {
 	ExtURLs []string `json:"ext_urls"`
 }
 
+// DanbooruData is the result data for the Danbooru index.
 type DanbooruData struct {
 	CommonData
 	DanbooruID int    `json:"danbooru_id"`

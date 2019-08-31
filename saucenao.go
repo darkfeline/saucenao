@@ -111,6 +111,7 @@ type SearchResponse struct {
 	Results []SearchResult `json:"results"`
 }
 
+// SearchHeader is the header for a search response.
 type SearchHeader struct {
 	Status           int `json:"status"`
 	ResultsRequested int `json:"results_requested"`
@@ -124,11 +125,13 @@ type SearchHeader struct {
 	MinimumSimilarity float64 `json:"minimum_similarity"`
 }
 
+// SearchResult is one result from a search.
 type SearchResult struct {
 	Header SearchResultHeader `json:"header"`
 	Data   json.RawMessage    `json:"data"`
 }
 
+// AsDanbooru returns the result data parsed for Danbooru.
 func (r *SearchResult) AsDanbooru() (*DanbooruData, error) {
 	var d DanbooruData
 	if err := json.Unmarshal(r.Data, &d); err != nil {
@@ -137,6 +140,7 @@ func (r *SearchResult) AsDanbooru() (*DanbooruData, error) {
 	return &d, nil
 }
 
+// SearchResultHeader is the header of a SearchResult.
 type SearchResultHeader struct {
 	IndexName  string  `json:"index_name"`
 	IndexID    int     `json:"index_id"`
