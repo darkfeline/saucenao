@@ -55,7 +55,14 @@ type SearchRequest struct {
 // DBMask is a bitmask for selecting database indexes.
 type DBMask uint64
 
-//go:generate python3 generate_dbs.py
+// These are database index constants.
+const (
+	Pixiv    DBMask = 1 << 5
+	Danbooru DBMask = 1 << 9
+	Yandere  DBMask = 1 << 12
+	Gelbooru DBMask = 1 << 25
+	Konachan DBMask = 1 << 26
+)
 
 // Search calls the SauceNAO search API.
 func (c *Client) Search(ctx context.Context, r *SearchRequest) (*SearchResponse, error) {
