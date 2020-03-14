@@ -21,12 +21,11 @@ package saucenao
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
-
-	"golang.org/x/xerrors"
 )
 
 // Client is a SauceNAO API client.
@@ -74,24 +73,24 @@ const (
 func (c *Client) Search(ctx context.Context, r *SearchRequest) (*SearchResponse, error) {
 	req, err := http.NewRequest("GET", c.searchURL(r), nil)
 	if err != nil {
-		return nil, xerrors.Errorf("saucenao search: %w", err)
+		return nil, fmt.Errorf("saucenao search: %w", err)
 	}
 	req = req.WithContext(ctx)
 	resp, err := c.C.Do(req)
 	if err != nil {
-		return nil, xerrors.Errorf("saucenao search: %w", err)
+		return nil, fmt.Errorf("saucenao search: %w", err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
-		return nil, xerrors.Errorf("saucenao search: unexpected status %v", resp.Status)
+		return nil, fmt.Errorf("saucenao search: unexpected status %v", resp.Status)
 	}
 	d, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, xerrors.Errorf("saucenao search: %w", err)
+		return nil, fmt.Errorf("saucenao search: %w", err)
 	}
 	var sr SearchResponse
 	if err := json.Unmarshal(d, &sr); err != nil {
-		return nil, xerrors.Errorf("saucenao search: %w", err)
+		return nil, fmt.Errorf("saucenao search: %w", err)
 	}
 	return &sr, nil
 }
@@ -148,7 +147,7 @@ type SearchResult struct {
 func (r *SearchResult) AsDanbooru() (*DanbooruData, error) {
 	var d DanbooruData
 	if err := json.Unmarshal(r.Data, &d); err != nil {
-		return nil, xerrors.Errorf("search result as danbooru: %w", err)
+		return nil, fmt.Errorf("search result as danbooru: %w", err)
 	}
 	return &d, nil
 }
