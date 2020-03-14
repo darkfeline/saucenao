@@ -57,11 +57,17 @@ type DBMask uint64
 
 // These are database index constants.
 const (
-	Pixiv    DBMask = 1 << 5
-	Danbooru DBMask = 1 << 9
-	Yandere  DBMask = 1 << 12
-	Gelbooru DBMask = 1 << 25
-	Konachan DBMask = 1 << 26
+	Pixiv    int = 5
+	Danbooru int = 9
+	Yandere  int = 12
+	Gelbooru int = 25
+	Konachan int = 26
+
+	PixivBit    DBMask = 1 << Pixiv
+	DanbooruBit DBMask = 1 << Danbooru
+	YandereBit  DBMask = 1 << Yandere
+	GelbooruBit DBMask = 1 << Gelbooru
+	KonachanBit DBMask = 1 << Konachan
 )
 
 // Search calls the SauceNAO search API.
