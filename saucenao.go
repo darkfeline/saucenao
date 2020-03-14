@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 )
@@ -114,6 +115,8 @@ func (c *Client) searchURL(r *SearchRequest) string {
 		b.WriteString("&dbmaski=")
 		b.WriteString(strconv.FormatUint(uint64(r.DBMaskI), 10))
 	}
+	b.WriteString("&url=")
+	b.WriteString(url.QueryEscape(r.URL))
 	return b.String()
 }
 
