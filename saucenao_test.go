@@ -15,15 +15,39 @@
 package saucenao
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
 	"io/ioutil"
+	"mime"
+	"mime/multipart"
+	"net/http"
+	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 )
 
-func TestUnmarshal(t *testing.T) {
+func TestClient_Search_image(t *testing.T) {
+	t.Parallel()
+	st := newSpyTransport(t)
+	c := Client{
+		C: http.Client{
+			Transport: &st,
+		},
+		Service: "https://example.com",
+		APIKey:  "amiya",
+	}
+	req := SearchRequest{
+		ImageBytes: bytes.NewReader([]byte("eyjafjalla")),
+	}
+	_, _ = c.Search(context.Background(), &req)
+	checkRequestFile(t, st.req, []byte("eyjafjalla"))
+}
+
+func TestSearchResponse_unmarshal(t *testing.T) {
 	t.Parallel()
 	d, err := ioutil.ReadFile(filepath.Join("testdata", "response.json"))
 	if err != nil {
@@ -101,4 +125,57 @@ func TestSearchResult_AsDanbooru(t *testing.T) {
 	if diff := cmp.Diff(want, got); diff != "" {
 		t.Errorf("data mismatch (-want +got):\n%s", diff)
 	}
+}
+
+func checkRequestFile(t *testing.T, req *http.Request, want []byte) {
+	t.Helper()
+	media, params, err := mime.ParseMediaType(req.Header["Content-Type"][0])
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if media != "multipart/form-data" {
+		t.Errorf("Got media type %v", media)
+		return
+	}
+	r := multipart.NewReader(req.Body, params["boundary"])
+	p, err := r.NextPart()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer p.Close()
+
+	b, err := ioutil.ReadAll(p)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if !reflect.DeepEqual(b, want) {
+		t.Errorf("Got %v; want %v", b, want)
+	}
+}
+
+type spyTransport struct {
+	req  *http.Request
+	resp *http.Response
+	err  error
+}
+
+func newSpyTransport(t *testing.T) spyTransport {
+	d, err := os.Open(filepath.Join("testdata", "response.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	return spyTransport{
+		resp: &http.Response{
+			StatusCode: 200,
+			Body:       d,
+		},
+	}
+}
+
+func (t *spyTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	t.req = req
+	return t.resp, t.err
 }

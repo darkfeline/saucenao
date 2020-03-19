@@ -19,10 +19,13 @@
 package saucenao
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"mime/multipart"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -38,10 +41,23 @@ type Client struct {
 	APIKey  string
 }
 
+// NewClient returns a new Client for saucenao.com.
+func NewClient(apiKey string) *Client {
+	return &Client{
+		Service: "https://saucenao.com",
+		APIKey:  apiKey,
+	}
+}
+
 // SearchRequest describes a search request.
 // See the SauceNAO API page for details.
 type SearchRequest struct {
+	// URL of image to search.
+	// Should not be provided with Image.
 	URL string
+	// ImageBytes is the image to search.
+	// Should not be provided with URL.
+	ImageBytes io.Reader
 	// TestMode limits matches per index to one.
 	TestMode bool
 	// DBMask is a bitmap indicating indexes to search.
@@ -72,14 +88,13 @@ const (
 
 // Search calls the SauceNAO search API.
 func (c *Client) Search(ctx context.Context, r *SearchRequest) (*SearchResponse, error) {
-	req, err := http.NewRequest("GET", c.searchURL(r), nil)
+	req, err := c.requestForSearch(ctx, r)
 	if err != nil {
 		return nil, fmt.Errorf("saucenao search: %w", err)
 	}
-	req = req.WithContext(ctx)
 	resp, err := c.C.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("saucenao search: %w", err)
+		return nil, fmt.Errorf("saucenao search: %s", err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
@@ -87,13 +102,44 @@ func (c *Client) Search(ctx context.Context, r *SearchRequest) (*SearchResponse,
 	}
 	d, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("saucenao search: %w", err)
+		return nil, fmt.Errorf("saucenao search: %s", err)
 	}
 	var sr SearchResponse
 	if err := json.Unmarshal(d, &sr); err != nil {
-		return nil, fmt.Errorf("saucenao search: %w", err)
+		return nil, fmt.Errorf("saucenao search: %s", err)
 	}
 	return &sr, nil
+}
+
+func (c *Client) requestForSearch(ctx context.Context, r *SearchRequest) (*http.Request, error) {
+	switch r.ImageBytes {
+	case nil:
+		req, err := http.NewRequestWithContext(ctx, "GET", c.searchURL(r), nil)
+		if err != nil {
+			panic(fmt.Sprintf("failed to create request: %s", err))
+		}
+		return req, nil
+	default:
+		var b bytes.Buffer
+		w := multipart.NewWriter(&b)
+		part, err := w.CreateFormFile("file", "image")
+		if err != nil {
+			panic(fmt.Sprintf("failed to create form: %s", err))
+		}
+		_, err = io.Copy(part, r.ImageBytes)
+		if err != nil {
+			return nil, err
+		}
+		if err := w.Close(); err != nil {
+			return nil, err
+		}
+		req, err := http.NewRequestWithContext(ctx, "POST", c.searchURL(r), &b)
+		if err != nil {
+			panic(fmt.Sprintf("failed to create request: %s", err))
+		}
+		req.Header.Set("Content-Type", w.FormDataContentType())
+		return req, nil
+	}
 }
 
 // searchURL returns the URL for performing a search request.
@@ -115,8 +161,10 @@ func (c *Client) searchURL(r *SearchRequest) string {
 		b.WriteString("&dbmaski=")
 		b.WriteString(strconv.FormatUint(uint64(r.DBMaskI), 10))
 	}
-	b.WriteString("&url=")
-	b.WriteString(url.QueryEscape(r.URL))
+	if r.URL != "" {
+		b.WriteString("&url=")
+		b.WriteString(url.QueryEscape(r.URL))
+	}
 	return b.String()
 }
 
