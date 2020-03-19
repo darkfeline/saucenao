@@ -44,9 +44,9 @@ type SearchRequest struct {
 	URL string
 	// TestMode limits matches per index to one.
 	TestMode bool
-	// DBMask are indexes to enable.
+	// DBMask is a bitmap indicating indexes to search.
 	DBMask DBMask
-	// DBMask are indexes to disable.
+	// DBMaskI is a bitmap indicating indexes to ignore.
 	DBMaskI DBMask
 	// NumRes is the number of results to request.
 	NumRes uint32
