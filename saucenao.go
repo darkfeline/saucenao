@@ -97,7 +97,11 @@ func (c *Client) Search(ctx context.Context, r *SearchRequest) (*SearchResponse,
 		return nil, fmt.Errorf("saucenao search: %s", err)
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
+	switch resp.StatusCode {
+	case 200:
+	case 429:
+		return nil, fmt.Errorf("saucenao search: %w", QuotaError{})
+	default:
 		return nil, fmt.Errorf("saucenao search: unexpected status %v", resp.Status)
 	}
 	d, err := ioutil.ReadAll(resp.Body)
@@ -209,4 +213,11 @@ type SearchResultHeader struct {
 	IndexID    int     `json:"index_id"`
 	Thumbnail  string  `json:"thumbnail"`
 	Similarity float64 `json:"similarity,string"`
+}
+
+// A QuotaError is returned when requests are rate limited.
+type QuotaError struct{}
+
+func (QuotaError) Error() string {
+	return "rate limited"
 }
