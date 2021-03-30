@@ -30,6 +30,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Client is a SauceNAO API client.
@@ -44,6 +45,9 @@ type Client struct {
 // NewClient returns a new Client for saucenao.com.
 func NewClient(apiKey string) *Client {
 	return &Client{
+		C: http.Client{
+			Timeout: 5 * time.Second,
+		},
 		Service: "https://saucenao.com",
 		APIKey:  apiKey,
 	}
